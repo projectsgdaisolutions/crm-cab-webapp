@@ -1,0 +1,31 @@
+<?php
+require_once __DIR__ . '/../../config/cors.php';
+require_once __DIR__ . '/../../config/database.php';
+require_once __DIR__ . '/../../middleware/auth.php';
+require_once __DIR__ . '/../../helpers/response.php';
+$actor = requireRole($pdo, ['admin', 'executive']);
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') { header('Allow: POST, OPTIONS'); sendError('Only POST method is allowed.', 405); }
+requireCsrfToken();
+$callId = filter_var($_POST['callId'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+if (!$callId) sendError('A valid callId is required.', 422);
+$stmt = $pdo->prepare('SELECT id, executive_id, duration_seconds FROM calls WHERE id = :id LIMIT 1'); $stmt->execute(['id' => $callId]); $call = $stmt->fetch();
+if (!$call) sendError('Call not found.', 404);
+if ($actor['role'] !== 'admin' && (int) $call['executive_id'] !== (int) $actor['id']) sendError('You do not have access to this call.', 403);
+if (!isset($_FILES['file']) || !is_array($_FILES['file'])) sendError('Recording file is required.', 422);
+$file = $_FILES['file']; if (($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) sendError('Recording upload failed.', 422);
+$maxBytes = (int) (getenv('MAX_RECORDING_BYTES') ?: 52428800); if ((int) $file['size'] > $maxBytes) sendError('Recording file is too large.', 422);
+$finfo = new finfo(FILEINFO_MIME_TYPE); $mime = $finfo->file($file['tmp_name']) ?: 'application/octet-stream';
+$allowed = ['audio/mpeg'=>'mp3','audio/mp3'=>'mp3','audio/wav'=>'wav','audio/x-wav'=>'wav','audio/mp4'=>'m4a','audio/aac'=>'aac','audio/ogg'=>'ogg','audio/webm'=>'webm'];
+if (!isset($allowed[$mime])) sendError('Unsupported recording format.', 422);
+$accessLevel = (string) ($_POST['accessLevel'] ?? 'Admin'); if (!in_array($accessLevel, ['Admin', 'Public'], true)) sendError('accessLevel is invalid.', 422);
+$duration = max(0, (int) ($_POST['durationSec'] ?? $call['duration_seconds'] ?? 0));
+$storageRoot = getenv('RECORDINGS_DIRECTORY') ?: dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . 'storage' . DIRECTORY_SEPARATOR . 'recordings';
+if (!is_dir($storageRoot) && !mkdir($storageRoot, 0775, true) && !is_dir($storageRoot)) sendError('Recording storage directory is unavailable.', 500);
+$subdir = date('Y/m'); $directory = rtrim($storageRoot, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $subdir; if (!is_dir($directory) && !mkdir($directory, 0775, true) && !is_dir($directory)) sendError('Recording storage directory is unavailable.', 500);
+$filename = 'call-' . $callId . '-' . bin2hex(random_bytes(12)) . '.' . $allowed[$mime]; $relative = $subdir . DIRECTORY_SEPARATOR . $filename; $target = $directory . DIRECTORY_SEPARATOR . $filename;
+if (!move_uploaded_file($file['tmp_name'], $target)) sendError('Could not store recording file.', 500);
+$stmt = $pdo->prepare('INSERT INTO recordings (call_id, file_path, duration_seconds, status, access_level) VALUES (:call_id, :file_path, :duration, "Available", :access_level)');
+$stmt->execute(['call_id'=>$callId,'file_path'=>$relative,'duration'=>$duration,'access_level'=>$accessLevel]); $id = (int) $pdo->lastInsertId();
+$read = $pdo->prepare('SELECT r.id, CONCAT("REC-", r.id) AS recordingId, r.call_id AS callId, COALESCE(c.name, l.name, "") AS customerOrLeadName, COALESCE(c.phone, l.phone, "") AS phoneNumber, COALESCE(u.name, "") AS executiveName, x.call_time AS callDate, r.duration_seconds AS durationSec, r.status, CONCAT("/api/recordings/media.php?id=", r.id) AS fileRef, r.transcript, r.access_level AS accessLevel FROM recordings r JOIN calls x ON x.id=r.call_id LEFT JOIN customers c ON c.id=x.customer_id LEFT JOIN leads l ON l.id=x.lead_id LEFT JOIN users u ON u.id=x.executive_id WHERE r.id=:id LIMIT 1');
+$read->execute(['id'=>$id]); $row=$read->fetch(); $row['id']=(string)$row['id']; $row['callId']=(string)$row['callId']; $row['durationSec']=(int)$row['durationSec']; $row['fileSizeKb']=round(((int)$file['size'])/1024,1);
+sendResponse(['success'=>true,'data'=>$row],201);

@@ -1,0 +1,143 @@
+{
+  "info": {
+    "name": "CAB CRM PHP API",
+    "description": "Verified routes from this repository. Set baseUrl to the backend root plus /api. PHP session cookies are managed by Postman cookie jar; login saves csrfToken for mutating calls. Replace all example IDs and credentials with records/accounts available in your environment. See MOBILE_API_DOCUMENTATION.md for validation, permissions, and response schemas.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8000/api" },
+    { "key": "csrfToken", "value": "" },
+    { "key": "identifier", "value": "executive@example.test" },
+    { "key": "password", "value": "" },
+    { "key": "resourceId", "value": "1" },
+    { "key": "customerId", "value": "1" },
+    { "key": "leadId", "value": "1" },
+    { "key": "followupId", "value": "1" },
+    { "key": "bookingId", "value": "1" },
+    { "key": "callId", "value": "1" },
+    { "key": "taskId", "value": "1" },
+    { "key": "notificationId", "value": "1" },
+    { "key": "userId", "value": "1" },
+    { "key": "recordingId", "value": "1" }
+  ],
+  "item": [
+    {
+      "name": "Authentication and Profile",
+      "item": [
+        {
+          "name": "Login",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["if (pm.response.code === 200) { pm.collectionVariables.set('csrfToken', pm.response.json().csrfToken); }"] } }],
+          "request": { "method": "POST", "header": [{ "key": "Accept", "value": "application/json" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"identifier\": \"{{identifier}}\",\n  \"password\": \"{{password}}\"\n}", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/auth/login.php" }
+        },
+        { "name": "Current session / CSRF", "request": { "method": "GET", "header": [{ "key": "Accept", "value": "application/json" }], "url": "{{baseUrl}}/auth/me.php" } },
+        { "name": "Logout", "request": { "method": "POST", "header": [{ "key": "X-CSRF-Token", "value": "{{csrfToken}}" }], "body": { "mode": "raw", "raw": "{}", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/auth/logout.php" } },
+        { "name": "Change password", "request": { "method": "POST", "header": [{ "key": "X-CSRF-Token", "value": "{{csrfToken}}" }], "body": { "mode": "raw", "raw": "{\n  \"currentPassword\": \"{{password}}\",\n  \"newPassword\": \"<new-password-at-least-12-characters>\"\n}", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/auth/password.php" } },
+        { "name": "Update admin profile", "request": { "method": "PUT", "header": [{ "key": "X-CSRF-Token", "value": "{{csrfToken}}" }], "body": { "mode": "raw", "raw": "{\n  \"name\": \"Alex Example\",\n  \"email\": \"alex@example.test\",\n  \"phone\": \"+15551234567\",\n  \"timezone\": \"Asia/Kolkata\",\n  \"bio\": \"\"\n}", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/auth/profile.php" } },
+        { "name": "Get preferences", "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/auth/preferences.php" } },
+        { "name": "Save preferences", "request": { "method": "PUT", "header": [{ "key": "X-CSRF-Token", "value": "{{csrfToken}}" }], "body": { "mode": "raw", "raw": "{}", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/auth/preferences.php" } }
+      ]
+    },
+    {
+      "name": "Customers",
+      "item": [
+        { "name": "List customers", "request": { "method": "GET", "url": "{{baseUrl}}/customers/index.php" } },
+        { "name": "Get customer by id", "request": { "method": "GET", "url": "{{baseUrl}}/customers/index.php?id={{customerId}}" } },
+        { "name": "Create customer", "request": { "method": "POST", "header": [{ "key": "X-CSRF-Token", "value": "{{csrfToken}}" }], "body": { "mode": "raw", "raw": "{\n  \"name\": \"Taylor Example\",\n  \"phone\": \"+15551234567\",\n  \"email\": \"taylor@example.test\",\n  \"location\": \"1 Main Street\",\n  \"city\": \"Metro\",\n  \"status\": \"Active\",\n  \"notes\": \"\",\n  \"tags\": [],\n  \"assignedExecutiveId\": \"{{userId}}\"\n}", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/customers/index.php" } },
+        { "name": "Update customer (PUT)", "request": { "method": "PUT", "header": [{ "key": "X-CSRF-Token", "value": "{{csrfToken}}" }], "body": { "mode": "raw", "raw": "{\n  \"name\": \"Taylor Example\",\n  \"phone\": \"+15551234567\",\n  \"email\": \"taylor@example.test\",\n  \"location\": \"1 Main Street\",\n  \"city\": \"Metro\",\n  \"status\": \"Active\",\n  \"notes\": \"\",\n  \"tags\": [],\n  \"assignedExecutiveId\": \"{{userId}}\"\n}", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/customers/index.php?id={{customerId}}" } },
+        { "name": "Update customer (PATCH; full body)", "request": { "method": "PATCH", "header": [{ "key": "X-CSRF-Token", "value": "{{csrfToken}}" }], "body": { "mode": "raw", "raw": "{\n  \"name\": \"Taylor Example\",\n  \"phone\": \"+15551234567\",\n  \"email\": \"taylor@example.test\",\n  \"location\": \"1 Main Street\",\n  \"city\": \"Metro\",\n  \"status\": \"Active\",\n  \"notes\": \"\",\n  \"tags\": [],\n  \"assignedExecutiveId\": \"{{userId}}\"\n}", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/customers/index.php?id={{customerId}}" } },
+        { "name": "Delete customer", "request": { "method": "DELETE", "header": [{ "key": "X-CSRF-Token", "value": "{{csrfToken}}" }], "url": "{{baseUrl}}/customers/index.php?id={{customerId}}" } }
+      ]
+    },
+    {
+      "name": "Leads",
+      "item": [
+        { "name": "List leads", "request": { "method": "GET", "url": "{{baseUrl}}/leads/index.php" } },
+        { "name": "Get lead by id", "request": { "method": "GET", "url": "{{baseUrl}}/leads/index.php?id={{leadId}}" } },
+        { "name": "Create lead", "request": { "method": "POST", "header": [{ "key": "X-CSRF-Token", "value": "{{csrfToken}}" }], "body": { "mode": "raw", "raw": "{\n  \"name\": \"Morgan Example\",\n  \"phone\": \"+15557654321\",\n  \"email\": \"morgan@example.test\",\n  \"source\": \"Referral\",\n  \"status\": \"New\",\n  \"priority\": \"Medium\",\n  \"interestedService\": \"Airport transfer\",\n  \"pickupLocation\": \"Airport\",\n  \"dropLocation\": \"Hotel\",\n  \"travelAt\": \"2026-10-10T09:30:00Z\",\n  \"estimatedValue\": 120,\n  \"location\": \"Metro\",\n  \"nextFollowUp\": null,\n  \"remarks\": \"Call after 5 PM\",\n  \"assignedExecutiveId\": \"{{userId}}\"\n}", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/leads/index.php" } },
+        { "name": "Update lead (PUT)", "request": { "method": "PUT", "header": [{ "key": "X-CSRF-Token", "value": "{{csrfToken}}" }], "body": { "mode": "raw", "raw": "{\n  \"name\": \"Morgan Example\",\n  \"phone\": \"+15557654321\",\n  \"email\": \"morgan@example.test\",\n  \"source\": \"Referral\",\n  \"status\": \"New\",\n  \"priority\": \"Medium\",\n  \"interestedService\": \"Airport transfer\",\n  \"pickupLocation\": \"Airport\",\n  \"dropLocation\": \"Hotel\",\n  \"travelAt\": \"2026-10-10T09:30:00Z\",\n  \"estimatedValue\": 120,\n  \"location\": \"Metro\",\n  \"nextFollowUp\": null,\n  \"remarks\": \"Call after 5 PM\",\n  \"assignedExecutiveId\": \"{{userId}}\"\n}", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/leads/index.php?id={{leadId}}" } },
+        { "name": "Update lead (PATCH; full body)", "request": { "method": "PATCH", "header": [{ "key": "X-CSRF-Token", "value": "{{csrfToken}}" }], "body": { "mode": "raw", "raw": "{\n  \"name\": \"Morgan Example\",\n  \"phone\": \"+15557654321\",\n  \"email\": \"morgan@example.test\",\n  \"source\": \"Referral\",\n  \"status\": \"New\",\n  \"priority\": \"Medium\",\n  \"interestedService\": \"Airport transfer\",\n  \"pickupLocation\": \"Airport\",\n  \"dropLocation\": \"Hotel\",\n  \"travelAt\": \"2026-10-10T09:30:00Z\",\n  \"estimatedValue\": 120,\n  \"location\": \"Metro\",\n  \"nextFollowUp\": null,\n  \"remarks\": \"Call after 5 PM\",\n  \"assignedExecutiveId\": \"{{userId}}\"\n}", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/leads/index.php?id={{leadId}}" } },
+        { "name": "Delete lead", "request": { "method": "DELETE", "header": [{ "key": "X-CSRF-Token", "value": "{{csrfToken}}" }], "url": "{{baseUrl}}/leads/index.php?id={{leadId}}" } },
+        { "name": "Convert booking-confirmed lead", "request": { "method": "POST", "header": [{ "key": "X-CSRF-Token", "value": "{{csrfToken}}" }], "body": { "mode": "raw", "raw": "{}", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/leads/convert.php?id={{leadId}}" } }
+      ]
+    },
+    {
+      "name": "Follow-ups",
+      "item": [
+        { "name": "List follow-ups", "request": { "method": "GET", "url": "{{baseUrl}}/followups/index.php" } },
+        { "name": "Get follow-up by id", "request": { "method": "GET", "url": "{{baseUrl}}/followups/index.php?id={{followupId}}" } },
+        { "name": "Create follow-up", "request": { "method": "POST", "header": [{ "key": "X-CSRF-Token", "value": "{{csrfToken}}" }], "body": { "mode": "raw", "raw": "{\n  \"type\": \"Lead\",\n  \"customerOrLeadId\": \"{{leadId}}\",\n  \"scheduledAt\": \"2026-10-04T10:00:00Z\",\n  \"status\": \"Pending\",\n  \"priority\": \"Medium\",\n  \"channel\": \"Phone\",\n  \"notes\": \"Ask about airport pickup\",\n  \"assignedExecutiveId\": \"{{userId}}\"\n}", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/followups/index.php" } },
+        { "name": "Update follow-up (PUT)", "request": { "method": "PUT", "header": [{ "key": "X-CSRF-Token", "value": "{{csrfToken}}" }], "body": { "mode": "raw", "raw": "{\n  \"type\": \"Lead\",\n  \"customerOrLeadId\": \"{{leadId}}\",\n  \"scheduledAt\": \"2026-10-04T10:00:00Z\",\n  \"status\": \"Pending\",\n  \"priority\": \"Medium\",\n  \"channel\": \"Phone\",\n  \"notes\": \"Ask about airport pickup\",\n  \"assignedExecutiveId\": \"{{userId}}\"\n}", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/followups/index.php?id={{followupId}}" } },
+        { "name": "Update follow-up (PATCH; full body)", "request": { "method": "PATCH", "header": [{ "key": "X-CSRF-Token", "value": "{{csrfToken}}" }], "body": { "mode": "raw", "raw": "{\n  \"type\": \"Lead\",\n  \"customerOrLeadId\": \"{{leadId}}\",\n  \"scheduledAt\": \"2026-10-04T10:00:00Z\",\n  \"status\": \"Pending\",\n  \"priority\": \"Medium\",\n  \"channel\": \"Phone\",\n  \"notes\": \"Ask about airport pickup\",\n  \"assignedExecutiveId\": \"{{userId}}\"\n}", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/followups/index.php?id={{followupId}}" } },
+        { "name": "Delete follow-up", "request": { "method": "DELETE", "header": [{ "key": "X-CSRF-Token", "value": "{{csrfToken}}" }], "url": "{{baseUrl}}/followups/index.php?id={{followupId}}" } }
+      ]
+    },
+    {
+      "name": "Bookings",
+      "item": [
+        { "name": "List bookings", "request": { "method": "GET", "url": "{{baseUrl}}/bookings/index.php" } },
+        { "name": "Get booking by id", "request": { "method": "GET", "url": "{{baseUrl}}/bookings/index.php?id={{bookingId}}" } },
+        { "name": "Create booking", "request": { "method": "POST", "header": [{ "key": "X-CSRF-Token", "value": "{{csrfToken}}" }], "body": { "mode": "raw", "raw": "{\n  \"customerOrLeadType\": \"Customer\",\n  \"customerOrLeadId\": \"{{customerId}}\",\n  \"mobileNumber\": \"+15551234567\",\n  \"pickupLocation\": \"Airport\",\n  \"dropLocation\": \"Hotel\",\n  \"travelDate\": \"2026-10-10T09:30:00Z\",\n  \"vehicleType\": \"Sedan\",\n  \"passengerCount\": 2,\n  \"bookingStatus\": \"Enquiry\",\n  \"paymentStatus\": \"Unpaid\",\n  \"amount\": 85.5,\n  \"driverVehicleDetails\": \"\",\n  \"remarks\": \"Meet at arrivals\"\n}", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/bookings/index.php" } },
+        { "name": "Update booking (PUT)", "request": { "method": "PUT", "header": [{ "key": "X-CSRF-Token", "value": "{{csrfToken}}" }], "body": { "mode": "raw", "raw": "{\n  \"customerOrLeadType\": \"Customer\",\n  \"customerOrLeadId\": \"{{customerId}}\",\n  \"mobileNumber\": \"+15551234567\",\n  \"pickupLocation\": \"Airport\",\n  \"dropLocation\": \"Hotel\",\n  \"travelDate\": \"2026-10-10T09:30:00Z\",\n  \"vehicleType\": \"Sedan\",\n  \"passengerCount\": 2,\n  \"bookingStatus\": \"Enquiry\",\n  \"paymentStatus\": \"Unpaid\",\n  \"amount\": 85.5,\n  \"driverVehicleDetails\": \"\",\n  \"remarks\": \"Meet at arrivals\"\n}", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/bookings/index.php?id={{bookingId}}" } },
+        { "name": "Update booking (PATCH; full body)", "request": { "method": "PATCH", "header": [{ "key": "X-CSRF-Token", "value": "{{csrfToken}}" }], "body": { "mode": "raw", "raw": "{\n  \"customerOrLeadType\": \"Customer\",\n  \"customerOrLeadId\": \"{{customerId}}\",\n  \"mobileNumber\": \"+15551234567\",\n  \"pickupLocation\": \"Airport\",\n  \"dropLocation\": \"Hotel\",\n  \"travelDate\": \"2026-10-10T09:30:00Z\",\n  \"vehicleType\": \"Sedan\",\n  \"passengerCount\": 2,\n  \"bookingStatus\": \"Enquiry\",\n  \"paymentStatus\": \"Unpaid\",\n  \"amount\": 85.5,\n  \"driverVehicleDetails\": \"\",\n  \"remarks\": \"Meet at arrivals\"\n}", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/bookings/index.php?id={{bookingId}}" } },
+        { "name": "Delete booking", "request": { "method": "DELETE", "header": [{ "key": "X-CSRF-Token", "value": "{{csrfToken}}" }], "url": "{{baseUrl}}/bookings/index.php?id={{bookingId}}" } }
+      ]
+    },
+    {
+      "name": "Calls",
+      "item": [
+        { "name": "List calls", "request": { "method": "GET", "url": "{{baseUrl}}/calls/index.php" } },
+        { "name": "Get call by id", "request": { "method": "GET", "url": "{{baseUrl}}/calls/index.php?id={{callId}}" } },
+        { "name": "Create call", "request": { "method": "POST", "header": [{ "key": "X-CSRF-Token", "value": "{{csrfToken}}" }], "body": { "mode": "raw", "raw": "{\n  \"type\": \"Lead\",\n  \"customerOrLeadId\": \"{{leadId}}\",\n  \"phoneNumber\": \"+15557654321\",\n  \"direction\": \"Outgoing\",\n  \"status\": \"Answered\",\n  \"durationSec\": 120,\n  \"timestamp\": \"2026-10-02T10:15:00Z\",\n  \"notes\": \"Discussed estimate\",\n  \"followUpId\": null\n}", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/calls/index.php" } },
+        { "name": "Update call (PUT)", "request": { "method": "PUT", "header": [{ "key": "X-CSRF-Token", "value": "{{csrfToken}}" }], "body": { "mode": "raw", "raw": "{\n  \"type\": \"Lead\",\n  \"customerOrLeadId\": \"{{leadId}}\",\n  \"phoneNumber\": \"+15557654321\",\n  \"direction\": \"Outgoing\",\n  \"status\": \"Answered\",\n  \"durationSec\": 120,\n  \"timestamp\": \"2026-10-02T10:15:00Z\",\n  \"notes\": \"Discussed estimate\",\n  \"followUpId\": null\n}", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/calls/index.php?id={{callId}}" } },
+        { "name": "Update call (PATCH; full body)", "request": { "method": "PATCH", "header": [{ "key": "X-CSRF-Token", "value": "{{csrfToken}}" }], "body": { "mode": "raw", "raw": "{\n  \"type\": \"Lead\",\n  \"customerOrLeadId\": \"{{leadId}}\",\n  \"phoneNumber\": \"+15557654321\",\n  \"direction\": \"Outgoing\",\n  \"status\": \"Answered\",\n  \"durationSec\": 120,\n  \"timestamp\": \"2026-10-02T10:15:00Z\",\n  \"notes\": \"Discussed estimate\",\n  \"followUpId\": null\n}", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/calls/index.php?id={{callId}}" } },
+        { "name": "Delete call", "request": { "method": "DELETE", "header": [{ "key": "X-CSRF-Token", "value": "{{csrfToken}}" }], "url": "{{baseUrl}}/calls/index.php?id={{callId}}" } }
+      ]
+    },
+    {
+      "name": "Tasks",
+      "item": [
+        { "name": "List tasks", "request": { "method": "GET", "url": "{{baseUrl}}/tasks/index.php" } },
+        { "name": "Get task by id", "request": { "method": "GET", "url": "{{baseUrl}}/tasks/index.php?id={{taskId}}" } },
+        { "name": "Create task", "request": { "method": "POST", "header": [{ "key": "X-CSRF-Token", "value": "{{csrfToken}}" }], "body": { "mode": "raw", "raw": "{\n  \"title\": \"Call customer\",\n  \"description\": \"Confirm pickup\",\n  \"assignedToId\": \"{{userId}}\",\n  \"dueDate\": \"2026-10-04T10:00:00Z\",\n  \"priority\": \"Medium\",\n  \"status\": \"Todo\",\n  \"relatedToType\": \"Booking\",\n  \"relatedToId\": \"{{bookingId}}\"\n}", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/tasks/index.php" } },
+        { "name": "Update task (PUT)", "request": { "method": "PUT", "header": [{ "key": "X-CSRF-Token", "value": "{{csrfToken}}" }], "body": { "mode": "raw", "raw": "{\n  \"title\": \"Call customer\",\n  \"description\": \"Confirm pickup\",\n  \"assignedToId\": \"{{userId}}\",\n  \"dueDate\": \"2026-10-04T10:00:00Z\",\n  \"priority\": \"Medium\",\n  \"status\": \"Todo\",\n  \"relatedToType\": \"Booking\",\n  \"relatedToId\": \"{{bookingId}}\"\n}", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/tasks/index.php?id={{taskId}}" } },
+        { "name": "Update task (PATCH; full body)", "request": { "method": "PATCH", "header": [{ "key": "X-CSRF-Token", "value": "{{csrfToken}}" }], "body": { "mode": "raw", "raw": "{\n  \"title\": \"Call customer\",\n  \"description\": \"Confirm pickup\",\n  \"assignedToId\": \"{{userId}}\",\n  \"dueDate\": \"2026-10-04T10:00:00Z\",\n  \"priority\": \"Medium\",\n  \"status\": \"Todo\",\n  \"relatedToType\": \"Booking\",\n  \"relatedToId\": \"{{bookingId}}\"\n}", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/tasks/index.php?id={{taskId}}" } },
+        { "name": "Delete task", "request": { "method": "DELETE", "header": [{ "key": "X-CSRF-Token", "value": "{{csrfToken}}" }], "url": "{{baseUrl}}/tasks/index.php?id={{taskId}}" } }
+      ]
+    },
+    {
+      "name": "Recordings and Activities",
+      "item": [
+        { "name": "List recordings (Admin only)", "request": { "method": "GET", "url": "{{baseUrl}}/recordings/index.php" } },
+        { "name": "Get recording metadata (Admin only)", "request": { "method": "GET", "url": "{{baseUrl}}/recordings/index.php?id={{recordingId}}" } },
+        { "name": "Stream recording media (Admin only)", "request": { "method": "GET", "url": "{{baseUrl}}/recordings/media.php?id={{recordingId}}" } },
+        { "name": "List activities", "request": { "method": "GET", "url": "{{baseUrl}}/activities/index.php" } },
+        { "name": "Get activity by id", "request": { "method": "GET", "url": "{{baseUrl}}/activities/index.php?id={{resourceId}}" } }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        { "name": "List latest notifications", "request": { "method": "GET", "url": "{{baseUrl}}/notifications/index.php" } },
+        { "name": "Mark one notification read", "request": { "method": "PATCH", "header": [{ "key": "X-CSRF-Token", "value": "{{csrfToken}}" }], "body": { "mode": "raw", "raw": "{}", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/notifications/index.php?id={{notificationId}}" } },
+        { "name": "Mark all notifications read", "request": { "method": "PATCH", "header": [{ "key": "X-CSRF-Token", "value": "{{csrfToken}}" }], "body": { "mode": "raw", "raw": "{\n  \"readAll\": true\n}", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/notifications/index.php" } }
+      ]
+    },
+    {
+      "name": "Team and Users (Admin writes)",
+      "item": [
+        { "name": "List users / self", "request": { "method": "GET", "url": "{{baseUrl}}/users/index.php" } },
+        { "name": "Create Calling Executive (Admin)", "request": { "method": "POST", "header": [{ "key": "X-CSRF-Token", "value": "{{csrfToken}}" }], "body": { "mode": "raw", "raw": "{\n  \"name\": \"Jordan Example\",\n  \"email\": \"jordan@example.test\",\n  \"phone\": \"+15559876543\",\n  \"role\": \"Calling Executive\",\n  \"password\": \"<initial-password-at-least-12-characters>\"\n}", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/users/index.php" } },
+        { "name": "Update Calling Executive (Admin)", "request": { "method": "PUT", "header": [{ "key": "X-CSRF-Token", "value": "{{csrfToken}}" }], "body": { "mode": "raw", "raw": "{\n  \"name\": \"Jordan Example\",\n  \"email\": \"jordan@example.test\",\n  \"phone\": \"+15559876543\",\n  \"active\": true\n}", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/users/index.php?id={{userId}}" } },
+        { "name": "Deactivate Calling Executive (Admin)", "request": { "method": "DELETE", "header": [{ "key": "X-CSRF-Token", "value": "{{csrfToken}}" }], "url": "{{baseUrl}}/users/index.php?id={{userId}}" } }
+      ]
+    },
+    {
+      "name": "Dashboard and Reports",
+      "item": [
+        { "name": "Dashboard (7d)", "request": { "method": "GET", "url": "{{baseUrl}}/reports/dashboard.php?range=7d" } },
+        { "name": "Dashboard (30d)", "request": { "method": "GET", "url": "{{baseUrl}}/reports/dashboard.php?range=30d" } },
+        { "name": "Reports (30d; Admin only)", "request": { "method": "GET", "url": "{{baseUrl}}/reports/index.php?range=30d" } }
+      ]
+    }
+  ]
+}
