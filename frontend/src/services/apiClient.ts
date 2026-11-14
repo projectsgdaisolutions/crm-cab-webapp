@@ -4,7 +4,7 @@ import { getCsrfToken } from '@/services/csrf'
 /**
  * Centralized Axios client for the PHP REST API.
  */
-const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api'
+const baseURL = import.meta.env.VITE_API_BASE_URL || 'https://vehicocrm.gdaisolutions.com/api'
 const timeout = Number(import.meta.env.VITE_API_TIMEOUT) || 15000
 
 export const apiClient: AxiosInstance = axios.create({

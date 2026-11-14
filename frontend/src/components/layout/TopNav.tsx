@@ -315,8 +315,8 @@ export function TopNav({ onMobileMenu, onQuickAction }: TopNavProps) {
             onClick={() => setProfileOpen((v) => !v)}
             className="flex items-center gap-2 h-9 pl-1 pr-2 rounded-lg hover:bg-slate-100 transition-colors"
           >
-            <Avatar name={user?.name ?? ''} size="sm" />
-            <span className="hidden md:inline text-sm font-medium text-slate-700">{user?.name.split(' ')[0]}</span>
+            <Avatar name={user?.name ?? 'User'} size="sm" />
+            <span className="hidden md:inline text-sm font-medium text-slate-700">{(user?.name ?? 'User').trim().split(/\s+/)[0]}</span>
           </button>
           <AnimatePresence>
             {profileOpen && (
@@ -330,8 +330,8 @@ export function TopNav({ onMobileMenu, onQuickAction }: TopNavProps) {
                   className="absolute right-0 mt-2 w-56 bg-white border border-slate-200 rounded-xl shadow-elevated z-40 overflow-hidden py-1"
                 >
                   <div className="px-4 py-3 border-b border-slate-100">
-                    <p className="text-sm font-semibold text-slate-900">{user?.name}</p>
-                    <p className="text-xs text-slate-500">{user?.email}</p>
+                    <p className="text-sm font-semibold text-slate-900">{user?.name || 'User'}</p>
+                    <p className="text-xs text-slate-500">{user?.email || 'No email available'}</p>
                   </div>
                   <div className="py-1">
                     {[

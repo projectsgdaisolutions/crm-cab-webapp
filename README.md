@@ -2,13 +2,18 @@
 
 React 18, Vite, TypeScript, PHP, and MySQL application for CAB customer operations. The frontend preserves the existing CRM screens and calls the PHP API using an HTTP-only PHP session cookie.
 
+## Project layout
+
+- `frontend/` — React, Vite, and TypeScript web CRM
+- `backend/` — PHP API, MySQL schema, and session authentication
+
 ## Local setup
 
-1. Install frontend dependencies with `npm install`.
-2. Configure `.env` with `VITE_API_BASE_URL=http://localhost:8000/api` and `VITE_API_TIMEOUT=15000`.
-3. Configure the PHP server environment with `DB_HOST`, `DB_NAME=gd_ai_cab_crm`, `DB_USER`, `DB_PASSWORD`, and `CORS_ALLOWED_ORIGINS=http://localhost:5173,http://127.0.0.1:5173`.
-4. Apply `backend/database/schema.sql` for a new database. For an existing database, run `php backend/database/migrations/001_crm_workflow_fields.php`; it checks `INFORMATION_SCHEMA`, adds only missing columns/indexes, and never recreates tables.
-5. Start the PHP API in PowerShell with `./backend/start-local.ps1` and the frontend with `npm run dev`. The local launcher loads allowlisted settings from `backend/.env` into the PHP process and prevents hidden files such as `.env` from being served by PHP's development server.
+1. Install frontend dependencies with `npm install` from the `frontend` folder.
+2. Configure `frontend/.env` from `frontend/.env.example`. The example uses `VITE_API_BASE_URL=https://vehicocrm.gdaisolutions.com/api`. For the local PHP server, set `VITE_API_BASE_URL=http://localhost:8000/api` and keep `VITE_API_TIMEOUT=15000`.
+3. Configure the PHP server environment with `DB_HOST`, `DB_NAME=gd_ai_cab_crm`, `DB_USER`, `DB_PASSWORD`, and `CORS_ALLOWED_ORIGINS=https://vehicocrm.gdaisolutions.com,http://localhost:5173,http://127.0.0.1:5173,http://localhost:8081`.
+4. Apply `backend/database/schema.sql` for a new database. For an existing database, run `php backend/database/migrations/001_crm_workflow_fields.php`; it checks `INFORMATION_SCHEMA`, adds only missing columns/indexes, and never recreates tables. Do not recreate `mobile_devices` if it already exists.
+5. From the repository root, start the PHP API in PowerShell with `./backend/start-local.ps1`. From the `frontend` folder, start the web app with `npm run dev`. The local launcher loads allowlisted settings from `backend/.env` into the PHP process and prevents hidden files such as `.env` from being served by PHP's development server.
 
 ## Password reset email
 
@@ -18,7 +23,7 @@ Set these variables in the **PHP server process environment** (not Vite): `SMTP_
 
 Password reset requests return a generic response, store only SHA-256 token hashes, expire after one hour, and are limited to 5 requests per IP per 15 minutes and 3 per account per hour. Reset tokens are delivered in the URL fragment, removed from browser history on page load, and consumed once. Resetting a password increments `users.auth_version`, invalidating all older PHP sessions; users with pre-migration sessions will need to sign in again. SMTP delivery is not available until PHPMailer is installed and real PHP SMTP credentials/environment values are configured.
 
-For production, set PHP environment variables in the web server or process manager, use HTTPS, configure exact trusted frontend origins, and set `SESSION_COOKIE_DOMAIN`, `SESSION_SAME_SITE`, and `SESSION_SECURE=true` when TLS terminates before PHP. `SESSION_SAME_SITE=None` requires HTTPS. Set `RECORDINGS_DIRECTORY` to a private server-side recording store. Do not put database credentials in Vite variables or browser code.
+For production, set PHP environment variables in the web server or process manager, use HTTPS, and configure exact trusted frontend origins. On HTTPS, including `https://vehicocrm.gdaisolutions.com`, session cookies default to `Secure` and `SameSite=None` when `SESSION_SECURE` and `SESSION_SAME_SITE` are unset. `SameSite=None` requires HTTPS. Set `SESSION_COOKIE_DOMAIN` when the cookie must be shared across subdomains. Set `RECORDINGS_DIRECTORY` to a private server-side recording store. Do not put database credentials in Vite variables or browser code.
 
 ## Authentication and roles
 
@@ -40,9 +45,14 @@ The live database must have `gd_ai_cab_crm` and the `users` table created before
 
 ## Validation
 
+From the `frontend` folder:
+
 - `npm run typecheck`
 - `npm run lint`
 - `npm run build`
+
+From the repository root:
+
 - `php -l` on PHP source files
 
 There is no automated integration-test suite yet. Current verification used temporary database users and records for role/login, CRUD, ownership denial, password update, profile/preferences, reporting, and cleanup checks.

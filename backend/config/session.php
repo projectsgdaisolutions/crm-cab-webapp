@@ -2,11 +2,22 @@
 
 $sessionLifetime = 28800;
 $forceSecureCookie = filter_var(getenv('SESSION_SECURE') ?: 'false', FILTER_VALIDATE_BOOLEAN);
-$isSecureRequest = $forceSecureCookie || (!empty($_SERVER['HTTPS']) && strtolower((string) $_SERVER['HTTPS']) !== 'off');
-$sameSite = getenv('SESSION_SAME_SITE') ?: 'Lax';
+$https = strtolower((string) ($_SERVER['HTTPS'] ?? ''));
+$forwardedProto = strtolower(trim(explode(',', (string) ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? ''))[0]));
+$requestHost = strtolower((string) ($_SERVER['HTTP_HOST'] ?? ''));
+$requestHost = preg_replace('/:\d+$/', '', $requestHost) ?? $requestHost;
+$isProductionHost = $requestHost === 'vehicocrm.gdaisolutions.com';
+$isSecureRequest = $forceSecureCookie
+    || ($https !== '' && $https !== 'off')
+    || $forwardedProto === 'https'
+    || $isProductionHost;
+$configuredSameSite = getenv('SESSION_SAME_SITE');
+$sameSite = is_string($configuredSameSite) && $configuredSameSite !== ''
+    ? $configuredSameSite
+    : ($isSecureRequest ? 'None' : 'Lax');
 
 if (!in_array($sameSite, ['Lax', 'Strict', 'None'], true)) {
-    $sameSite = 'Lax';
+    $sameSite = $isSecureRequest ? 'None' : 'Lax';
 }
 
 if ($sameSite === 'None' && !$isSecureRequest) {

@@ -63,7 +63,7 @@ function crmAssertOwned(PDO $pdo, string $table, int $id, array $actor): array
     if ($actor['role'] !== 'admin') {
         $owned = false;
         foreach ($owners[$table] as $column) {
-            if ((int) ($record[$column] ?? 0) === (int) $actor['id']) $owned = true;
+            if ((int) ($record[$column] ?? 0) === (int) ($actor['user_id'] ?? $actor['id'] ?? 0)) $owned = true;
         }
         if (!$owned) sendError('You do not have access to this record.', 403);
     }
@@ -220,7 +220,7 @@ function crmList(PDO $pdo, string $resource, array $actor, ?int $id = null, ?int
             OR (a.entity_type = 'tasks' AND EXISTS (SELECT 1 FROM tasks t WHERE t.id = a.entity_id AND t.assigned_to = :task_owner))
             OR a.user_id = :actor_owner)";
         foreach (['customer_owner', 'lead_owner', 'followup_owner', 'booking_owner', 'call_owner', 'task_owner', 'actor_owner'] as $ownerKey) {
-            $parameters[$ownerKey] = $actor['id'];
+            $parameters[$ownerKey] = $actor['user_id'] ?? $actor['id'] ?? 0;
         }
     } elseif ($actor['role'] !== 'admin') {
         $owner = match ($resource) {
@@ -232,7 +232,7 @@ function crmList(PDO $pdo, string $resource, array $actor, ?int $id = null, ?int
         };
         if ($owner) {
             $where[] = "$owner = :actor_id";
-            $parameters['actor_id'] = $actor['id'];
+            $parameters['actor_id'] = $actor['user_id'] ?? $actor['id'] ?? 0;
         }
     }
     if ($resource === 'recordings') {
@@ -240,7 +240,9 @@ function crmList(PDO $pdo, string $resource, array $actor, ?int $id = null, ?int
     }
     // Optional server-side pagination/search/filter/date range. Existing clients may omit these.
     $page = max(1, (int)($_GET['page'] ?? 1));
-    $limit = min(200, max(1, (int)($_GET['limit'] ?? 0)));
+    $limit = isset($_GET['limit']) && $_GET['limit'] !== ''
+        ? min(200, max(1, (int)$_GET['limit']))
+        : 0;
     $search = trim((string)($_GET['search'] ?? $_GET['q'] ?? ''));
     $status = trim((string)($_GET['status'] ?? ''));
     $dateFrom = $_GET['dateFrom'] ?? null;
@@ -315,7 +317,11 @@ function crmList(PDO $pdo, string $resource, array $actor, ?int $id = null, ?int
 function crmWriteFields(string $resource, array $body, array $actor, PDO $pdo): array
 {
     $fields = [];
-    $userId = (int) $actor['id'];
+    $userId = (int) ($actor['user_id'] ?? $actor['id'] ?? 0);
+
+    if ($userId <= 0) {
+        sendError('Invalid authenticated user ID.', 401);
+    }
     $role = $actor['role'];
     switch ($resource) {
         case 'customers':
@@ -497,7 +503,7 @@ function crmWriteAudit(PDO $pdo, array $actor, string $resource, int $id, string
          VALUES (:user_id, :entity_type, :entity_id, :action, :description)'
     );
     $statement->execute([
-        'user_id' => $actor['id'],
+        'user_id' => $actor['user_id'] ?? $actor['id'] ?? 0,
         'entity_type' => $resource,
         'entity_id' => $id,
         'action' => $action,
@@ -597,7 +603,7 @@ function crmGenerateReminderNotifications(PDO $pdo, array $actor): void
     }
 
     $taskQuery = $pdo->prepare("SELECT id, title, assigned_to, due_date FROM tasks WHERE assigned_to = :user_id AND status IN ('Pending', 'In Progress') AND (due_date IS NULL OR due_date <= DATE_ADD(NOW(), INTERVAL 1 DAY)) ORDER BY due_date ASC");
-    $taskQuery->execute(['user_id' => $actor['id']]);
+    $taskQuery->execute(['user_id' => $actor['user_id'] ?? $actor['id'] ?? 0]);
     while ($task = $taskQuery->fetch()) {
         $taskTitle = $task['due_date'] !== null && strtotime((string) $task['due_date']) < time()
             ? 'Task overdue'
@@ -606,7 +612,7 @@ function crmGenerateReminderNotifications(PDO $pdo, array $actor): void
     }
 
     $followupQuery = $pdo->prepare("SELECT id, assigned_to, scheduled_at, notes FROM follow_ups WHERE assigned_to = :user_id AND status = 'Pending' AND scheduled_at <= DATE_ADD(NOW(), INTERVAL 1 DAY) ORDER BY scheduled_at ASC");
-    $followupQuery->execute(['user_id' => $actor['id']]);
+    $followupQuery->execute(['user_id' => $actor['user_id'] ?? $actor['id'] ?? 0]);
     while ($followup = $followupQuery->fetch()) {
         $label = strtotime((string) $followup['scheduled_at']) < time() ? 'Follow-up overdue' : 'Follow-up due soon';
         crmCreateTypedNotification($pdo, (int) $followup['assigned_to'], $label, ($followup['notes'] !== '' ? $followup['notes'] : 'Follow-up') . ' is scheduled for ' . (string) $followup['scheduled_at'] . '.', 'follow-up', 'follow-up', (int) $followup['id']);
@@ -719,7 +725,7 @@ function handleCrmResource(PDO $pdo, string $resource): never
                 sendError('New bookings must start in the Enquiry stage.', 422);
             }
             if (in_array($resource, ['customers', 'leads', 'bookings', 'tasks'], true)) {
-                $fields['created_by'] = $actor['id'];
+                $fields['created_by'] = $actor['user_id'] ?? $actor['id'] ?? 0;
             }
             $columns = array_keys($fields);
             $quoted = implode(', ', array_map(static fn ($column) => "`$column`", $columns));
@@ -738,7 +744,7 @@ function handleCrmResource(PDO $pdo, string $resource): never
                 $code = 'BK-' . str_pad((string) $newId, 5, '0', STR_PAD_LEFT);
                 $codeStatement = $pdo->prepare('UPDATE bookings SET booking_code = :code WHERE id = :id');
                 $codeStatement->execute(['code' => $code, 'id' => $newId]);
-                $recipientId = isset($fields['assigned_to']) ? (int) $fields['assigned_to'] : (int) $actor['id'];
+                $recipientId = isset($fields['assigned_to']) ? (int) $fields['assigned_to'] : (int) ($actor['user_id'] ?? $actor['id'] ?? 0);
                 crmCreateTypedNotification($pdo, $recipientId, 'New booking created', 'Booking ' . $code . ' was created for you.', 'booking', 'booking', $newId);
             }
             if ($resource === 'tasks') {
@@ -820,7 +826,7 @@ function handleCrmResource(PDO $pdo, string $resource): never
             crmCreateTypedNotification($pdo, $assignedTo, $taskLabel, $taskMessage, 'task', 'task', (int) $id);
         }
         if ($resource === 'bookings') {
-            $recipientId = isset($fields['assigned_to']) ? (int) $fields['assigned_to'] : (int) $actor['id'];
+            $recipientId = isset($fields['assigned_to']) ? (int) $fields['assigned_to'] : (int) ($actor['user_id'] ?? $actor['id'] ?? 0);
             $status = (string) $fields['status'];
             $bookingCode = 'BK-' . str_pad((string) $id, 5, '0', STR_PAD_LEFT);
             crmCreateTypedNotification($pdo, $recipientId, 'Booking status updated', 'Booking ' . $bookingCode . ' is now ' . $status . '.', 'booking', 'booking', (int) $id);
@@ -839,9 +845,21 @@ function handleCrmResource(PDO $pdo, string $resource): never
         $updated = crmList($pdo, $resource, $actor, (int) $id);
         sendResponse(['success' => true, 'data' => $updated[0] ?? null]);
     } catch (PDOException $error) {
-        if ($pdo->inTransaction()) $pdo->rollBack();
-        if ($error->getCode() === '23000') sendError('A referenced record does not exist or this conflicts with an existing record.', 409);
-        error_log('CRM write failed: ' . $error->getMessage());
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+
+        error_log('CRM DATABASE ERROR: ' . $error->getMessage());
+        error_log('CRM SQLSTATE: ' . $error->getCode());
+        error_log('CRM PDO ERROR INFO: ' . json_encode($error->errorInfo));
+
+        if ($error->getCode() === '23000') {
+            sendError(
+                'A referenced record does not exist or this conflicts with an existing record.',
+                409
+            );
+        }
+
         sendError('Unable to save this record.', 500);
     } catch (Throwable $error) {
         if ($pdo->inTransaction()) $pdo->rollBack();

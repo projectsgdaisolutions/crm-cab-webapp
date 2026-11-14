@@ -1,13 +1,13 @@
 <?php
 
-$configuredOrigins = getenv('CORS_ALLOWED_ORIGINS') ?: 'http://localhost:5173,http://127.0.0.1:5173';
+$configuredOrigins = getenv('CORS_ALLOWED_ORIGINS') ?: 'https://vehicocrm.gdaisolutions.com,http://localhost:5173,http://127.0.0.1:5173,http://localhost:8081';
 $allowedOrigins = array_filter(array_map('trim', explode(',', $configuredOrigins)));
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
 
 header('Vary: Origin');
 header('Access-Control-Allow-Credentials: true');
 header('Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, X-Requested-With, X-Client, X-CSRF-Token');
+header('Access-Control-Allow-Headers: Content-Type, Accept, Authorization, X-Requested-With, X-Client, X-CSRF-Token');
 
 if ($origin !== '') {
     if (!in_array($origin, $allowedOrigins, true)) {

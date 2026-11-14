@@ -4,15 +4,15 @@ This guide targets the existing PHP API in this repository. Its authentication c
 
 ## Configure the Base URL
 
-Use a mobile build-time configuration value. The backend's local base is `http://localhost:8000/api` when PHP is served with `php -S localhost:8000 -t backend` from the repository root. `localhost` from a physical device refers to that device. Use the appropriate emulator host bridge or a reachable development machine/LAN URL. Production base URL is pending; do not use the frontend web URL or the `.env.example` future `/v1` comment as a verified API endpoint.
+Use a mobile build-time configuration value. The confirmed production API is `https://vehicocrm.gdaisolutions.com/api`. The backend's local base is `http://localhost:8000/api` when PHP is served with `php -S localhost:8000 -t backend` from the repository root. `localhost` from a physical device refers to that device. Use the appropriate emulator host bridge or a reachable development machine/LAN URL.
 
 ```ts
 // src/api/config.ts
 // Supply API_BASE_URL through the mobile app's environment/flavor configuration.
-export const API_BASE_URL = 'http://localhost:8000/api'
+export const API_BASE_URL = 'https://vehicocrm.gdaisolutions.com/api'
 ```
 
-Use HTTPS outside isolated local development. No production host or certificate is configured in this project.
+Use HTTPS outside isolated local development. The production host is `https://vehicocrm.gdaisolutions.com`.
 
 ## Axios Client and CSRF
 

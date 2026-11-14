@@ -6,7 +6,7 @@
 
 - Local development: `http://localhost:8000/api` when the PHP server is started from the repository root with `php -S localhost:8000 -t backend`.
 - Route prefix: `/api`; endpoints use `.php` paths (there is no `/v1` route prefix).
-- Production: **pending**. No deployed backend URL is configured. `.env.example` mentions a future `https://api.gdaisolutions.com/v1`; it is a comment, not a verified URL or implemented route. Do not use the frontend hosting URL as the API base.
+- Production: `https://vehicocrm.gdaisolutions.com/api`. Do not use a `/v1` prefix, and do not use the frontend hosting URL as the API base unless it is this same host.
 - React Native note: `localhost` points to the device/emulator, not necessarily the developer PC. Use the platform emulator host mapping or a reachable development host/LAN address. Set the actual reachable URL in the mobile build environment.
 
 Unless noted otherwise, JSON endpoints return `Content-Type: application/json` and `Cache-Control: no-store`. A normal success envelope is `{"success":true,"data":...}`. List endpoints put an array in `data`; single-resource endpoints put an object there. Authentication endpoints use top-level `user` and `csrfToken` instead. Errors use `{"success":false,"message":"..."}`.
@@ -287,7 +287,7 @@ IDs are integer primary keys in MySQL and usually serialized as strings by resou
 
 ## Environment and Deployment
 
-Backend database settings are read from `DB_HOST`, `DB_NAME` (defaults `gd_ai_cab_crm`), `DB_USER`, and `DB_PASSWORD`. Other relevant settings: `CORS_ALLOWED_ORIGINS`, `SESSION_SECURE`, `SESSION_SAME_SITE`, `SESSION_COOKIE_DOMAIN`, and `RECORDINGS_DIRECTORY`. The repository's local launch instructions use `php -S localhost:8000 -t backend`. There is no production deployment/base URL verified in this project.
+Backend database settings are read from `DB_HOST`, `DB_NAME` (defaults `gd_ai_cab_crm`), `DB_USER`, and `DB_PASSWORD`. Other relevant settings: `CORS_ALLOWED_ORIGINS`, `SESSION_SECURE`, `SESSION_SAME_SITE`, `SESSION_COOKIE_DOMAIN`, and `RECORDINGS_DIRECTORY`. The repository's local launch instructions use `php -S localhost:8000 -t backend`. The production API base is `https://vehicocrm.gdaisolutions.com/api`. On that HTTPS host, session cookies default to `Secure` and `SameSite=None`.
 
 Admin may filter call history with `?executiveId=<executiveId>`.
 
