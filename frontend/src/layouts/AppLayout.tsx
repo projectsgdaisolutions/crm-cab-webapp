@@ -14,14 +14,14 @@ export function AppLayout() {
   const location = useLocation()
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="app-shell min-h-screen bg-slate-50">
       <Sidebar
         collapsed={collapsed}
         setCollapsed={setCollapsed}
         mobileOpen={mobileOpen}
         setMobileOpen={setMobileOpen}
       />
-      <div className={cn('transition-all duration-300', collapsed ? 'lg:pl-[68px]' : 'lg:pl-64')}>
+      <div className={cn('app-main transition-all duration-300', collapsed ? 'lg:pl-[68px]' : 'lg:pl-64')}>
         <TopNav
           onMobileMenu={() => setMobileOpen(true)}
           onQuickAction={() => setQuickOpen(true)}

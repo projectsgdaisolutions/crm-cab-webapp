@@ -14,6 +14,7 @@ import { useAuth } from '@/auth/AuthContext'
 import { preferenceService } from '@/services'
 import { apiClient } from '@/services/apiClient'
 import { cn } from '@/lib/utils'
+import { ThemeSwitcher } from '@/theme/ThemeProvider'
 
 type Tab = 'profile' | 'notifications' | 'preferences' | 'access'
 
@@ -269,7 +270,8 @@ export default function SettingsPage() {
                   <CardDescription>Customize how the CRM works for you</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <ThemeSwitcher />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-slate-100 pt-4">
                     <div>
                       <Label>Default landing page</Label>
                       <Select value={String(crmPrefs.landingPage)} onChange={(event) => setCrmPrefs((current) => ({ ...current, landingPage: event.target.value }))}>

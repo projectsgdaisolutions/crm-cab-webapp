@@ -176,7 +176,7 @@ export default function LoginPage() {
           <section className="mx-auto w-full max-w-2xl text-white">
             {/* Logo and brand */}
             <div className="mb-6 flex items-center gap-3.5 sm:mb-10">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white p-1.5 shadow-xl shadow-black/30 ring-1 ring-white/40 sm:h-14 sm:w-14">
+              <div className="theme-keep flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white p-1.5 shadow-xl shadow-black/30 ring-1 ring-white/40 sm:h-14 sm:w-14">
                 <img src={logo} alt="vehico CRM" className="h-full w-full object-contain" />
               </div>
               <div>

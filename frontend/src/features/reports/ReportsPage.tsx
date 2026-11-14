@@ -37,12 +37,41 @@ const reportTabs: { id: ReportType; label: string; icon: typeof BarChart3 }[] = 
 
 type ReportData = Awaited<ReturnType<typeof analyticsService.reports>>
 
+const RANGE_LABELS = {
+  '7d': 'Last 7 days',
+  '30d': 'Last 30 days',
+  '90d': 'Last 90 days',
+  '12m': 'Last 12 months',
+} as const
+
 export default function ReportsPage() {
   const toast = useToast()
   const [loading, setLoading] = useState(true)
   const [data, setData] = useState<ReportData | null>(null)
   const [activeReport, setActiveReport] = useState<ReportType>('overview')
   const [range, setRange] = useState<'7d' | '30d' | '90d' | '12m'>('30d')
+
+  useEffect(() => {
+    const prepareCharts = () => {
+      document.querySelectorAll<HTMLElement>('.print-report .recharts-responsive-container').forEach((node) => {
+        const plot = node.closest('.chart-plot') as HTMLElement | null
+        node.style.width = '100%'
+        node.style.height = `${plot?.clientHeight || node.clientHeight || 220}px`
+      })
+    }
+    const restoreCharts = () => {
+      document.querySelectorAll<HTMLElement>('.print-report .recharts-responsive-container').forEach((node) => {
+        node.style.width = ''
+        node.style.height = ''
+      })
+    }
+    window.addEventListener('beforeprint', prepareCharts)
+    window.addEventListener('afterprint', restoreCharts)
+    return () => {
+      window.removeEventListener('beforeprint', prepareCharts)
+      window.removeEventListener('afterprint', restoreCharts)
+    }
+  }, [])
 
   useEffect(() => {
     analyticsService.reports(range).then((d) => {
@@ -95,8 +124,13 @@ export default function ReportsPage() {
     )
   }
 
+  const activeTab = reportTabs.find((tab) => tab.id === activeReport)
+
   return (
-    <div className="space-y-6">
+    <div className="print-report space-y-6">
+      <ReportPrintHeader title={activeTab?.label ?? 'Overview'} rangeLabel={RANGE_LABELS[range]} />
+
+      <div className="print:hidden">
       <PageHeader
         title="Reports & Analytics"
         description="Performance metrics across customers, leads, calls, and bookings"
@@ -136,8 +170,9 @@ export default function ReportsPage() {
           ))}
         </div>
       </div>
+      </div>
 
-      <div className="text-xs text-slate-500">Metrics are calculated from CRM records for the selected date range.</div>
+      <div className="text-xs text-slate-500 print:hidden">Metrics are calculated from CRM records for the selected date range.</div>
 
       {/* Report body */}
       {activeReport === 'overview' && (
@@ -210,6 +245,31 @@ export default function ReportsPage() {
                 </LineChart>
               </ResponsiveContainer>
             </ChartCard>
+          </div>
+          <div className="hidden print:block">
+            <h2 className="mb-2 text-sm font-semibold text-slate-900">Calls per executive</h2>
+            <table>
+              <thead>
+                <tr className="text-left text-[11px] uppercase tracking-wide text-slate-500">
+                  <th className="py-2 pr-3 font-semibold">Executive</th>
+                  <th className="py-2 pr-3 text-right font-semibold">Total</th>
+                  <th className="py-2 pr-3 text-right font-semibold">Answered</th>
+                  <th className="py-2 pr-3 text-right font-semibold">Missed</th>
+                  <th className="py-2 text-right font-semibold">Conversion</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.callPerformanceByExec.map((row) => (
+                  <tr key={row.name}>
+                    <td className="py-2 pr-3 font-medium text-slate-900">{row.name}</td>
+                    <td className="py-2 pr-3 text-right">{row.calls}</td>
+                    <td className="py-2 pr-3 text-right">{row.conversions}</td>
+                    <td className="py-2 pr-3 text-right">{row.missed}</td>
+                    <td className="py-2 text-right">{row.conversionRate}%</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       )}
@@ -398,6 +458,32 @@ export default function ReportsPage() {
           </ChartCard>
         </div>
       )}
+
+      <div className="hidden border-t border-slate-300 pt-3 text-[11px] text-slate-500 print:flex print:items-center print:justify-between">
+        <span>vehico CRM · CAB Service CRM</span>
+        <span>Confidential · {RANGE_LABELS[range]}</span>
+      </div>
+    </div>
+  )
+}
+
+function ReportPrintHeader({ title, rangeLabel }: { title: string; rangeLabel: string }) {
+  const printedAt = new Date().toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })
+  return (
+    <div className="mb-6 hidden print:block">
+      <div className="flex items-start justify-between gap-8 border-b-2 border-slate-900 pb-4">
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">vehico CRM · CAB Service</p>
+          <h1 className="mt-1 text-[26px] font-bold leading-tight text-slate-900">Reports & Analytics</h1>
+          <p className="mt-1 text-sm font-medium text-slate-700">{title}</p>
+        </div>
+        <div className="min-w-[180px] text-right text-xs leading-5 text-slate-600">
+          <p><span className="font-semibold text-slate-900">Period</span> · {rangeLabel}</p>
+          <p><span className="font-semibold text-slate-900">Generated</span> · {printedAt}</p>
+          <p>Internal performance report</p>
+        </div>
+      </div>
+      <p className="mt-3 text-xs text-slate-500">Metrics are calculated from CRM records for the selected date range.</p>
     </div>
   )
 }

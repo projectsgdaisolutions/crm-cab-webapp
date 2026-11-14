@@ -21,7 +21,7 @@ export function ChartCard({ title, description, children, className, action, hei
         </div>
         {action}
       </CardHeader>
-      <CardContent style={{ height }} className="p-4">
+      <CardContent style={{ height }} className="chart-plot p-4">
         {children}
       </CardContent>
     </Card>

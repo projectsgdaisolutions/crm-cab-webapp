@@ -51,12 +51,12 @@ export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }: 
         collapsed && 'lg:justify-center lg:px-0',
       )}
     >
-      <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white p-1.5 shadow-[0_6px_16px_-6px_rgba(15,23,42,0.35)] ring-1 ring-slate-200">
+      <div className="theme-keep flex h-11 w-11 flex-shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white p-1.5 shadow-[0_6px_16px_-6px_rgba(15,23,42,0.35)] ring-1 ring-slate-200">
         <img src={logo} alt="vehico CRM" className="h-full w-full object-contain" />
       </div>
       {(!collapsed || mobileOpen) && (
         <div className="min-w-0">
-          <p className="truncate bg-gradient-to-r from-navy-900 to-navy-700 bg-clip-text text-[15px] font-extrabold leading-tight tracking-tight text-transparent">
+          <p className="brand-title truncate bg-gradient-to-r from-navy-900 to-navy-700 bg-clip-text text-[15px] font-extrabold leading-tight tracking-tight text-transparent">
             vehico CRM
           </p>
           <p className="mt-0.5 truncate text-[10px] font-semibold leading-tight text-teal-600">CAB Service CRM</p>
@@ -233,7 +233,7 @@ export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }: 
       {/* Desktop sidebar */}
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-30 hidden border-r border-slate-200/80 bg-white shadow-[4px_0_24px_-12px_rgba(15,23,42,0.12)] transition-all duration-300 lg:block',
+          'app-chrome fixed inset-y-0 left-0 z-30 hidden border-r border-slate-200/80 bg-white shadow-[4px_0_24px_-12px_rgba(15,23,42,0.12)] transition-all duration-300 lg:block',
           collapsed ? 'w-[68px]' : 'w-64',
         )}
       >
@@ -257,14 +257,14 @@ export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }: 
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setMobileOpen(false)}
-              className="fixed inset-0 z-40 bg-navy-950/50 backdrop-blur-sm lg:hidden"
+              className="print-hide fixed inset-0 z-40 bg-navy-950/50 backdrop-blur-sm lg:hidden"
             />
             <motion.aside
               initial={{ x: '-100%' }}
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ type: 'spring', duration: 0.35, bounce: 0 }}
-              className="fixed inset-y-0 left-0 z-50 flex w-72 max-w-[85vw] flex-col overflow-hidden rounded-r-3xl border-r border-slate-200/80 bg-white shadow-2xl lg:hidden"
+              className="app-chrome fixed inset-y-0 left-0 z-50 flex w-72 max-w-[85vw] flex-col overflow-hidden rounded-r-3xl border-r border-slate-200/80 bg-white shadow-2xl lg:hidden"
             >
               <div className="relative isolate flex h-full flex-col overflow-hidden">
                 <Glows />

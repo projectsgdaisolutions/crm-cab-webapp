@@ -20,7 +20,7 @@ export function QuickActionMenu({ open, onClose }: QuickActionMenuProps) {
   return createPortal(
     <AnimatePresence>
       {open && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center pt-[15vh] px-4">
+        <div className="print-hide fixed inset-0 z-50 flex items-start justify-center pt-[15vh] px-4">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}

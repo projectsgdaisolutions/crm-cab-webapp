@@ -13,6 +13,7 @@ import { useAuth } from '@/auth/AuthContext'
 import { useToast } from '@/components/ui/Toast'
 import { bookingService, callService, customerService, leadService, notificationService } from '@/services'
 import type { Booking, CallRecord, Customer, Lead, Notification } from '@/types'
+import { ThemeSwitcher } from '@/theme/ThemeProvider'
 
 interface TopNavProps {
   onMobileMenu: () => void
@@ -159,7 +160,7 @@ export function TopNav({ onMobileMenu, onQuickAction }: TopNavProps) {
 
   return (
     <>
-      <header className="sticky top-0 z-20 h-16 bg-white/90 backdrop-blur-md border-b border-slate-200 flex items-center px-4 lg:px-6 gap-4">
+      <header className="app-chrome sticky top-0 z-20 h-16 bg-white/90 backdrop-blur-md border-b border-slate-200 flex items-center px-4 lg:px-6 gap-4">
         <button
           onClick={onMobileMenu}
           className="lg:hidden text-slate-500 hover:text-slate-900 p-1.5"
@@ -327,11 +328,14 @@ export function TopNav({ onMobileMenu, onQuickAction }: TopNavProps) {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: -8, scale: 0.96 }}
                   transition={{ duration: 0.18 }}
-                  className="absolute right-0 mt-2 w-56 bg-white border border-slate-200 rounded-xl shadow-elevated z-40 overflow-hidden py-1"
+                  className="absolute right-0 mt-2 w-80 bg-white border border-slate-200 rounded-xl shadow-elevated z-40 overflow-hidden py-1"
                 >
                   <div className="px-4 py-3 border-b border-slate-100">
                     <p className="text-sm font-semibold text-slate-900">{user?.name || 'User'}</p>
                     <p className="text-xs text-slate-500">{user?.email || 'No email available'}</p>
+                  </div>
+                  <div className="px-4 py-3 border-b border-slate-100">
+                    <ThemeSwitcher compact />
                   </div>
                   <div className="py-1">
                     {[

@@ -177,7 +177,7 @@ export function DataTable<T>({
         </table>
       </div>
       {sorted.length > 0 && (
-        <div className="px-4 py-3 border-t border-slate-100 flex items-center justify-between text-sm">
+        <div className="print-hide px-4 py-3 border-t border-slate-100 flex items-center justify-between text-sm">
           <p className="text-slate-500">
             Showing <span className="font-medium text-slate-700">{(currentPage - 1) * pageSize + 1}</span> to{' '}
             <span className="font-medium text-slate-700">{Math.min(currentPage * pageSize, sorted.length)}</span> of{' '}

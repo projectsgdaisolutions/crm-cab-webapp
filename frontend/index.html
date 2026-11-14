@@ -9,6 +9,18 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
     <title>vehico CRM | CAB Service CRM</title>
+    <script>
+      (function () {
+        try {
+          var mode = localStorage.getItem('vehico-theme') || 'light'
+          var systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+          var dark = mode === 'dark' || (mode === 'system' && systemDark)
+          document.documentElement.classList.toggle('dark', dark)
+          document.documentElement.dataset.theme = mode
+          document.documentElement.style.colorScheme = dark ? 'dark' : 'light'
+        } catch (e) {}
+      })()
+    </script>
   </head>
   <body>
     <div id="root"></div>
